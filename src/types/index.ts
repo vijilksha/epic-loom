@@ -13,6 +13,16 @@ export interface Issue {
   reportedBy?: string;
   createdAt: Date;
   updatedAt: Date;
+  statusDate?: Date;
+}
+
+export interface Comment {
+  id: string;
+  issueId: string;
+  commentText: string;
+  createdBy?: string;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export interface Column {

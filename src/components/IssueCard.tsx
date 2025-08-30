@@ -11,6 +11,7 @@ interface IssueCardProps {
   issue: Issue;
   isDragging?: boolean;
   onDelete?: (id: string) => void;
+  onClick?: (issue: Issue) => void;
 }
 
 const issueTypeConfig = {
@@ -27,7 +28,7 @@ const priorityConfig = {
   critical: { icon: AlertTriangle, color: "priority-critical" },
 };
 
-export function IssueCard({ issue, isDragging, onDelete }: IssueCardProps) {
+export function IssueCard({ issue, isDragging, onDelete, onClick }: IssueCardProps) {
   const TypeIcon = issueTypeConfig[issue.type].icon;
   const PriorityIcon = priorityConfig[issue.priority].icon;
   const deleteIssueMutation = useDeleteIssue();
@@ -48,6 +49,7 @@ export function IssueCard({ issue, isDragging, onDelete }: IssueCardProps) {
         isDragging && "rotate-2 shadow-large",
         `border-l-${issueTypeConfig[issue.type].color}`
       )}
+      onClick={() => onClick?.(issue)}
     >
       <div className="space-y-3">
         <div className="flex items-start justify-between">

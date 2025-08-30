@@ -1,8 +1,9 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { DragDropContext, Droppable, Draggable, DropResult } from "@hello-pangea/dnd";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { IssueCard } from "./IssueCard";
 import { CreateIssueDialog } from "./CreateIssueDialog";
+import { IssueDetailDialog } from "./IssueDetailDialog";
 import { Column, Issue, Status } from "@/types";
 import { cn } from "@/lib/utils";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -24,6 +25,8 @@ const statusColors = {
 export function KanbanBoard() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const [selectedIssue, setSelectedIssue] = useState<Issue | null>(null);
+  const [isDetailDialogOpen, setIsDetailDialogOpen] = useState(false);
 
   // Fetch issues from Supabase
   const { data: issues = [], isLoading } = useQuery({
@@ -122,6 +125,11 @@ export function KanbanBoard() {
     createIssueMutation.mutate(issueData);
   };
 
+  const handleIssueClick = (issue: Issue) => {
+    setSelectedIssue(issue);
+    setIsDetailDialogOpen(true);
+  };
+
   const handleDragEnd = (result: DropResult) => {
     const { destination, source, draggableId } = result;
 
@@ -203,6 +211,7 @@ export function KanbanBoard() {
                               <IssueCard 
                                 issue={issue} 
                                 isDragging={snapshot.isDragging}
+                                onClick={handleIssueClick}
                               />
                             </div>
                           )}
@@ -217,6 +226,12 @@ export function KanbanBoard() {
           ))}
         </div>
       </DragDropContext>
+
+      <IssueDetailDialog
+        issue={selectedIssue}
+        open={isDetailDialogOpen}
+        onOpenChange={setIsDetailDialogOpen}
+      />
     </div>
   );
 }
