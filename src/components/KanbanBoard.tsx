@@ -47,8 +47,12 @@ export function KanbanBoard() {
         priority: issue.priority,
         status: issue.status,
         assignee: issue.assignee,
+        reportedBy: issue.reported_by,
         createdAt: new Date(issue.created_at),
         updatedAt: new Date(issue.updated_at),
+        statusDate: issue.status_date ? new Date(issue.status_date) : undefined,
+        raisedDate: issue.raised_date ? new Date(issue.raised_date) : undefined,
+        closedDate: issue.closed_date ? new Date(issue.closed_date) : undefined,
       })) as Issue[];
     },
   });

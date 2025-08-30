@@ -14,6 +14,8 @@ export interface Issue {
   createdAt: Date;
   updatedAt: Date;
   statusDate?: Date;
+  raisedDate?: Date;
+  closedDate?: Date;
 }
 
 export interface Comment {

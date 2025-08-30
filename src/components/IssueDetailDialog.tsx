@@ -72,6 +72,8 @@ export function IssueDetailDialog({ issue, open, onOpenChange }: IssueDetailDial
   const [commentText, setCommentText] = useState("");
   const [actionTaken, setActionTaken] = useState("");
   const [solutionSummary, setSolutionSummary] = useState("");
+  const [isEditingRaisedDate, setIsEditingRaisedDate] = useState(false);
+  const [editRaisedDate, setEditRaisedDate] = useState("");
   const { data: comments, isLoading: commentsLoading } = useComments(issue?.id || "");
   const createCommentMutation = useCreateComment();
   const updateIssueMutation = useUpdateIssue();
@@ -80,6 +82,23 @@ export function IssueDetailDialog({ issue, open, onOpenChange }: IssueDetailDial
 
   const TypeIcon = issueTypeIcons[issue.type];
   const PriorityIcon = priorityIcons[issue.priority];
+
+  const handleRaisedDateEdit = () => {
+    setEditRaisedDate(issue.raisedDate ? format(issue.raisedDate, "yyyy-MM-dd") : format(new Date(), "yyyy-MM-dd"));
+    setIsEditingRaisedDate(true);
+  };
+
+  const handleRaisedDateSave = () => {
+    if (editRaisedDate) {
+      updateIssueMutation.mutate({
+        id: issue.id,
+        updates: {
+          raisedDate: new Date(editRaisedDate),
+        }
+      });
+    }
+    setIsEditingRaisedDate(false);
+  };
 
   const handleAddComment = async () => {
     if (!commentText.trim()) return;
@@ -197,6 +216,49 @@ export function IssueDetailDialog({ issue, open, onOpenChange }: IssueDetailDial
                       <User className="h-4 w-4 text-muted-foreground" />
                       <span className="text-sm">{issue.reportedBy}</span>
                     </div>
+                  </div>
+                )}
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <h4 className="font-semibold mb-2 flex items-center gap-2">
+                    <Calendar className="h-4 w-4" />
+                    Issue Raised Date
+                  </h4>
+                  {isEditingRaisedDate ? (
+                    <div className="flex items-center gap-2">
+                      <Input
+                        type="date"
+                        value={editRaisedDate}
+                        onChange={(e) => setEditRaisedDate(e.target.value)}
+                        className="flex-1"
+                      />
+                      <Button size="sm" onClick={handleRaisedDateSave}>Save</Button>
+                      <Button size="sm" variant="outline" onClick={() => setIsEditingRaisedDate(false)}>Cancel</Button>
+                    </div>
+                  ) : (
+                    <div 
+                      className="flex items-center gap-2 cursor-pointer hover:bg-accent p-2 rounded"
+                      onClick={handleRaisedDateEdit}
+                    >
+                      <span className="text-sm">
+                        {issue.raisedDate ? format(issue.raisedDate, "MMM d, yyyy") : "Not set"}
+                      </span>
+                      <span className="text-xs text-muted-foreground">(click to edit)</span>
+                    </div>
+                  )}
+                </div>
+
+                {issue.closedDate && (
+                  <div>
+                    <h4 className="font-semibold mb-2 flex items-center gap-2">
+                      <Calendar className="h-4 w-4" />
+                      Closed Date
+                    </h4>
+                    <span className="text-sm text-green-700 dark:text-green-300">
+                      {format(issue.closedDate, "MMM d, yyyy 'at' h:mm a")}
+                    </span>
                   </div>
                 )}
               </div>

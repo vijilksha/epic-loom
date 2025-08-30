@@ -34,6 +34,7 @@ export function useCreateIssue() {
           status: issue.status,
           assignee: issue.assignee,
           reported_by: issue.reportedBy,
+          raised_date: issue.raisedDate ? issue.raisedDate.toISOString() : new Date().toISOString(),
         }])
         .select()
         .single();

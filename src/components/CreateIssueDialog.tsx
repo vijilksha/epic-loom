@@ -5,8 +5,9 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-import { Plus } from "lucide-react";
+import { Plus, Calendar } from "lucide-react";
 import { Issue, IssueType, Priority } from "@/types";
+import { format } from "date-fns";
 
 interface CreateIssueDialogProps {
   onCreateIssue: (issue: Omit<Issue, 'id' | 'createdAt' | 'updatedAt'>) => void;
@@ -22,6 +23,7 @@ export function CreateIssueDialog({ onCreateIssue, children }: CreateIssueDialog
     priority: "medium" as Priority,
     assignee: "",
     reportedBy: "",
+    raisedDate: format(new Date(), "yyyy-MM-dd"),
   });
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -37,6 +39,7 @@ export function CreateIssueDialog({ onCreateIssue, children }: CreateIssueDialog
       status: "todo",
       assignee: formData.assignee || undefined,
       reportedBy: formData.reportedBy || undefined,
+      raisedDate: new Date(formData.raisedDate),
     });
 
     // Reset form
@@ -47,6 +50,7 @@ export function CreateIssueDialog({ onCreateIssue, children }: CreateIssueDialog
       priority: "medium",
       assignee: "",
       reportedBy: "",
+      raisedDate: format(new Date(), "yyyy-MM-dd"),
     });
     
     setOpen(false);
@@ -145,6 +149,20 @@ export function CreateIssueDialog({ onCreateIssue, children }: CreateIssueDialog
                 onChange={(e) => setFormData(prev => ({ ...prev, reportedBy: e.target.value }))}
               />
             </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="raisedDate" className="flex items-center gap-2">
+              <Calendar className="h-4 w-4" />
+              Issue Raised Date
+            </Label>
+            <Input
+              id="raisedDate"
+              type="date"
+              value={formData.raisedDate}
+              onChange={(e) => setFormData(prev => ({ ...prev, raisedDate: e.target.value }))}
+              required
+            />
           </div>
 
           <div className="flex justify-end space-x-2 pt-4">
