@@ -4,6 +4,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { IssueCard } from "./IssueCard";
+import { CreateIssueDialog } from "./CreateIssueDialog";
 import { Column, Issue, Status } from "@/types";
 import { cn } from "@/lib/utils";
 
@@ -84,6 +85,36 @@ const statusColors = {
 export function KanbanBoard() {
   const [columns, setColumns] = useState<Column[]>(initialColumns);
 
+  const generateIssueId = () => {
+    const existingIds = columns.flatMap(col => col.issues.map(issue => issue.id));
+    const numbers = existingIds
+      .map(id => parseInt(id.split('-')[1]))
+      .filter(num => !isNaN(num));
+    const maxNumber = numbers.length > 0 ? Math.max(...numbers) : 0;
+    return `PROJ-${String(maxNumber + 1).padStart(3, '0')}`;
+  };
+
+  const handleCreateIssue = (issueData: Omit<Issue, 'id' | 'createdAt' | 'updatedAt'>) => {
+    const newIssue: Issue = {
+      ...issueData,
+      id: generateIssueId(),
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+
+    setColumns(prevColumns => {
+      return prevColumns.map(column => {
+        if (column.status === 'todo') {
+          return {
+            ...column,
+            issues: [...column.issues, newIssue]
+          };
+        }
+        return column;
+      });
+    });
+  };
+
   const handleDragEnd = (result: DropResult) => {
     const { destination, source, draggableId } = result;
 
@@ -145,9 +176,7 @@ export function KanbanBoard() {
                       {column.issues.length}
                     </span>
                   </div>
-                  <Button variant="ghost" size="icon" className="h-6 w-6">
-                    <Plus className="h-4 w-4" />
-                  </Button>
+                  <CreateIssueDialog onCreateIssue={handleCreateIssue} />
                 </div>
               </CardHeader>
               
