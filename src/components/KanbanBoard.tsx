@@ -1,79 +1,18 @@
-import { useState } from "react";
+import { useMemo } from "react";
 import { DragDropContext, Droppable, Draggable, DropResult } from "@hello-pangea/dnd";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
 import { IssueCard } from "./IssueCard";
 import { CreateIssueDialog } from "./CreateIssueDialog";
 import { Column, Issue, Status } from "@/types";
 import { cn } from "@/lib/utils";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
-const initialColumns: Column[] = [
-  {
-    id: "todo",
-    title: "To Do",
-    status: "todo",
-    issues: [
-      {
-        id: "PROJ-001",
-        title: "Implement user authentication",
-        description: "Add login and registration functionality with JWT tokens",
-        type: "story",
-        priority: "high",
-        status: "todo",
-        assignee: "John Doe",
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      },
-      {
-        id: "PROJ-002", 
-        title: "Fix header alignment bug",
-        description: "The navigation header is misaligned on mobile devices",
-        type: "bug",
-        priority: "medium",
-        status: "todo",
-        assignee: "Jane Smith",
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      },
-    ]
-  },
-  {
-    id: "progress",
-    title: "In Progress", 
-    status: "progress",
-    issues: [
-      {
-        id: "PROJ-003",
-        title: "Design new dashboard layout",
-        description: "Create wireframes and mockups for the new dashboard",
-        type: "task",
-        priority: "medium",
-        status: "progress",
-        assignee: "Mike Johnson",
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      },
-    ]
-  },
-  {
-    id: "done",
-    title: "Done",
-    status: "done", 
-    issues: [
-      {
-        id: "PROJ-004",
-        title: "Setup project repository",
-        description: "Initialize Git repository and setup CI/CD pipeline",
-        type: "task",
-        priority: "low",
-        status: "done",
-        assignee: "Sarah Wilson",
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      },
-    ]
-  },
+const columnDefinitions = [
+  { id: "todo", title: "To Do", status: "todo" as Status },
+  { id: "progress", title: "In Progress", status: "progress" as Status },
+  { id: "done", title: "Done", status: "done" as Status },
 ];
 
 const statusColors = {
@@ -83,36 +22,104 @@ const statusColors = {
 };
 
 export function KanbanBoard() {
-  const [columns, setColumns] = useState<Column[]>(initialColumns);
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
 
-  const generateIssueId = () => {
-    const existingIds = columns.flatMap(col => col.issues.map(issue => issue.id));
-    const numbers = existingIds
-      .map(id => parseInt(id.split('-')[1]))
-      .filter(num => !isNaN(num));
-    const maxNumber = numbers.length > 0 ? Math.max(...numbers) : 0;
-    return `PROJ-${String(maxNumber + 1).padStart(3, '0')}`;
-  };
+  // Fetch issues from Supabase
+  const { data: issues = [], isLoading } = useQuery({
+    queryKey: ['issues'],
+    queryFn: async () => {
+      const { data, error } = await (supabase as any)
+        .from('issues')
+        .select('*')
+        .order('created_at', { ascending: false });
+      
+      if (error) throw error;
+      
+      return (data || []).map((issue: any) => ({
+        id: issue.id,
+        title: issue.title,
+        description: issue.description,
+        type: issue.type,
+        priority: issue.priority,
+        status: issue.status,
+        assignee: issue.assignee,
+        createdAt: new Date(issue.created_at),
+        updatedAt: new Date(issue.updated_at),
+      })) as Issue[];
+    },
+  });
+
+  // Create issue mutation
+  const createIssueMutation = useMutation({
+    mutationFn: async (issueData: Omit<Issue, 'id' | 'createdAt' | 'updatedAt'>) => {
+      const { data, error } = await (supabase as any)
+        .from('issues')
+        .insert([{
+          title: issueData.title,
+          description: issueData.description,
+          type: issueData.type,
+          priority: issueData.priority,
+          status: issueData.status,
+          assignee: issueData.assignee,
+        }])
+        .select()
+        .single();
+      
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['issues'] });
+      toast({
+        title: "Issue created",
+        description: "Your issue has been created successfully.",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: "Failed to create issue. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Update issue status mutation
+  const updateIssueStatusMutation = useMutation({
+    mutationFn: async ({ issueId, status }: { issueId: string; status: Status }) => {
+      const { data, error } = await (supabase as any)
+        .from('issues')
+        .update({ status, updated_at: new Date().toISOString() })
+        .eq('id', issueId)
+        .select()
+        .single();
+      
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['issues'] });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: "Failed to update issue status. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Group issues by status into columns
+  const columns = useMemo(() => {
+    return columnDefinitions.map(columnDef => ({
+      ...columnDef,
+      issues: issues.filter(issue => issue.status === columnDef.status),
+    }));
+  }, [issues]);
 
   const handleCreateIssue = (issueData: Omit<Issue, 'id' | 'createdAt' | 'updatedAt'>) => {
-    const newIssue: Issue = {
-      ...issueData,
-      id: generateIssueId(),
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
-
-    setColumns(prevColumns => {
-      return prevColumns.map(column => {
-        if (column.status === 'todo') {
-          return {
-            ...column,
-            issues: [...column.issues, newIssue]
-          };
-        }
-        return column;
-      });
-    });
+    createIssueMutation.mutate(issueData);
   };
 
   const handleDragEnd = (result: DropResult) => {
@@ -127,32 +134,22 @@ export function KanbanBoard() {
       return;
     }
 
-    const sourceColumn = columns.find(col => col.id === source.droppableId);
-    const destColumn = columns.find(col => col.id === destination.droppableId);
+    const destColumn = columnDefinitions.find(col => col.id === destination.droppableId);
+    if (!destColumn) return;
 
-    if (!sourceColumn || !destColumn) return;
-
-    const draggedIssue = sourceColumn.issues[source.index];
-    const updatedIssue = { ...draggedIssue, status: destColumn.status };
-
-    setColumns(prevColumns => {
-      return prevColumns.map(column => {
-        if (column.id === source.droppableId) {
-          const newIssues = [...column.issues];
-          newIssues.splice(source.index, 1);
-          return { ...column, issues: newIssues };
-        }
-        
-        if (column.id === destination.droppableId) {
-          const newIssues = [...column.issues];
-          newIssues.splice(destination.index, 0, updatedIssue);
-          return { ...column, issues: newIssues };
-        }
-        
-        return column;
-      });
+    updateIssueStatusMutation.mutate({
+      issueId: draggableId,
+      status: destColumn.status,
     });
   };
+
+  if (isLoading) {
+    return (
+      <div className="h-full flex items-center justify-center">
+        <div className="text-muted-foreground">Loading issues...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="h-full">
