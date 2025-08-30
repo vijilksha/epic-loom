@@ -50,10 +50,12 @@ export type Database = {
       issues: {
         Row: {
           assignee: string | null
+          closed_date: string | null
           created_at: string
           description: string | null
           id: string
           priority: string
+          raised_date: string | null
           reported_by: string | null
           status: string
           status_date: string | null
@@ -63,10 +65,12 @@ export type Database = {
         }
         Insert: {
           assignee?: string | null
+          closed_date?: string | null
           created_at?: string
           description?: string | null
           id?: string
           priority: string
+          raised_date?: string | null
           reported_by?: string | null
           status: string
           status_date?: string | null
@@ -76,10 +80,12 @@ export type Database = {
         }
         Update: {
           assignee?: string | null
+          closed_date?: string | null
           created_at?: string
           description?: string | null
           id?: string
           priority?: string
+          raised_date?: string | null
           reported_by?: string | null
           status?: string
           status_date?: string | null
