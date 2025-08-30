@@ -10,6 +10,7 @@ export interface Issue {
   priority: Priority;
   status: Status;
   assignee?: string;
+  reportedBy?: string;
   createdAt: Date;
   updatedAt: Date;
 }

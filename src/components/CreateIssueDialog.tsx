@@ -21,6 +21,7 @@ export function CreateIssueDialog({ onCreateIssue, children }: CreateIssueDialog
     type: "story" as IssueType,
     priority: "medium" as Priority,
     assignee: "",
+    reportedBy: "",
   });
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -35,6 +36,7 @@ export function CreateIssueDialog({ onCreateIssue, children }: CreateIssueDialog
       priority: formData.priority,
       status: "todo",
       assignee: formData.assignee || undefined,
+      reportedBy: formData.reportedBy || undefined,
     });
 
     // Reset form
@@ -44,6 +46,7 @@ export function CreateIssueDialog({ onCreateIssue, children }: CreateIssueDialog
       type: "story",
       priority: "medium",
       assignee: "",
+      reportedBy: "",
     });
     
     setOpen(false);
@@ -122,14 +125,26 @@ export function CreateIssueDialog({ onCreateIssue, children }: CreateIssueDialog
             </div>
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="assignee">Assignee</Label>
-            <Input
-              id="assignee"
-              placeholder="Enter assignee name (optional)"
-              value={formData.assignee}
-              onChange={(e) => setFormData(prev => ({ ...prev, assignee: e.target.value }))}
-            />
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="assignee">Assignee</Label>
+              <Input
+                id="assignee"
+                placeholder="Enter assignee name (optional)"
+                value={formData.assignee}
+                onChange={(e) => setFormData(prev => ({ ...prev, assignee: e.target.value }))}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="reportedBy">Reported By</Label>
+              <Input
+                id="reportedBy"
+                placeholder="Enter reporter name (optional)"
+                value={formData.reportedBy}
+                onChange={(e) => setFormData(prev => ({ ...prev, reportedBy: e.target.value }))}
+              />
+            </div>
           </div>
 
           <div className="flex justify-end space-x-2 pt-4">
