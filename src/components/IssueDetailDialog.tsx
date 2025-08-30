@@ -1,6 +1,7 @@
 import React, { useState } from "react";
-import { Issue } from "@/types";
+import { Issue, Status, Priority } from "@/types";
 import { useComments, useCreateComment } from "@/hooks/useComments";
+import { useUpdateIssue } from "@/hooks/useIssues";
 import {
   Dialog,
   DialogContent,
@@ -16,6 +17,7 @@ import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { 
   Bug, 
   BookOpen, 
@@ -72,6 +74,7 @@ export function IssueDetailDialog({ issue, open, onOpenChange }: IssueDetailDial
   const [solutionSummary, setSolutionSummary] = useState("");
   const { data: comments, isLoading: commentsLoading } = useComments(issue?.id || "");
   const createCommentMutation = useCreateComment();
+  const updateIssueMutation = useUpdateIssue();
 
   if (!issue) return null;
 
@@ -94,6 +97,28 @@ export function IssueDetailDialog({ issue, open, onOpenChange }: IssueDetailDial
     setSolutionSummary("");
   };
 
+  const handleStatusUpdate = (newStatus: string) => {
+    if (!issue) return;
+    
+    updateIssueMutation.mutate({
+      id: issue.id,
+      updates: {
+        status: newStatus as Status,
+      }
+    });
+  };
+
+  const handlePriorityUpdate = (newPriority: string) => {
+    if (!issue) return;
+    
+    updateIssueMutation.mutate({
+      id: issue.id,
+      updates: {
+        priority: newPriority as Priority,
+      }
+    });
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[80vh]">
@@ -110,15 +135,36 @@ export function IssueDetailDialog({ issue, open, onOpenChange }: IssueDetailDial
             {/* Issue Details */}
             <div className="space-y-4">
               <div className="flex items-center gap-4 flex-wrap">
-                <Badge className={statusColors[issue.status]}>
-                  {issue.status.toUpperCase()}
-                </Badge>
-                <div className="flex items-center gap-1">
-                  <PriorityIcon className={`h-4 w-4 ${priorityColors[issue.priority]}`} />
-                  <span className={`text-sm font-medium ${priorityColors[issue.priority]}`}>
-                    {issue.priority.charAt(0).toUpperCase() + issue.priority.slice(1)}
-                  </span>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-medium">Status:</span>
+                  <Select value={issue.status} onValueChange={handleStatusUpdate}>
+                    <SelectTrigger className="w-32">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="todo">To Do</SelectItem>
+                      <SelectItem value="progress">In Progress</SelectItem>
+                      <SelectItem value="done">Done</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
+
+                <div className="flex items-center gap-2">
+                  <PriorityIcon className={`h-4 w-4 ${priorityColors[issue.priority]}`} />
+                  <span className="text-sm font-medium">Priority:</span>
+                  <Select value={issue.priority} onValueChange={handlePriorityUpdate}>
+                    <SelectTrigger className="w-24">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="low">Low</SelectItem>
+                      <SelectItem value="medium">Medium</SelectItem>
+                      <SelectItem value="high">High</SelectItem>
+                      <SelectItem value="critical">Critical</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
                 <div className="flex items-center gap-1 text-sm text-muted-foreground">
                   <Calendar className="h-4 w-4" />
                   {format(issue.createdAt, "MMM d, yyyy")}
