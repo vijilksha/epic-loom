@@ -1,0 +1,202 @@
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { 
+  TrendingUp, 
+  Users, 
+  CheckCircle, 
+  Clock, 
+  Bug, 
+  Zap,
+  CheckSquare,
+  Crown,
+  ArrowRight
+} from "lucide-react";
+import { Link } from "react-router-dom";
+
+const stats = [
+  {
+    title: "Total Issues",
+    value: "23",
+    change: "+12%",
+    icon: CheckSquare,
+    color: "primary"
+  },
+  {
+    title: "In Progress", 
+    value: "8",
+    change: "+2",
+    icon: Clock,
+    color: "status-progress"
+  },
+  {
+    title: "Completed",
+    value: "15", 
+    change: "+5",
+    icon: CheckCircle,
+    color: "status-done"
+  },
+  {
+    title: "Team Members",
+    value: "6",
+    change: "+1",
+    icon: Users,
+    color: "muted"
+  },
+];
+
+const recentIssues = [
+  {
+    id: "PROJ-001",
+    title: "Implement user authentication",
+    type: "story",
+    priority: "high",
+    assignee: "John Doe",
+    status: "In Progress"
+  },
+  {
+    id: "PROJ-002",
+    title: "Fix header alignment bug", 
+    type: "bug",
+    priority: "medium",
+    assignee: "Jane Smith",
+    status: "To Do"
+  },
+  {
+    id: "PROJ-003",
+    title: "Design new dashboard layout",
+    type: "task", 
+    priority: "medium",
+    assignee: "Mike Johnson",
+    status: "In Progress"
+  },
+];
+
+const issueTypeIcons = {
+  story: Zap,
+  bug: Bug,
+  task: CheckSquare,
+  epic: Crown,
+};
+
+export function Dashboard() {
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-foreground">Dashboard</h1>
+          <p className="text-muted-foreground">Track your project progress and team productivity</p>
+        </div>
+        <div className="flex items-center space-x-3">
+          <Button asChild>
+            <Link to="/board">
+              View Board
+              <ArrowRight className="h-4 w-4 ml-2" />
+            </Link>
+          </Button>
+        </div>
+      </div>
+
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        {stats.map((stat) => (
+          <Card key={stat.title} className="hover:shadow-medium transition-shadow">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">
+                {stat.title}
+              </CardTitle>
+              <stat.icon className={`h-4 w-4 text-${stat.color}`} />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-foreground">{stat.value}</div>
+              <p className="text-xs text-muted-foreground">
+                <span className="text-primary font-medium">{stat.change}</span> from last month
+              </p>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Recent Issues */}
+        <Card className="lg:col-span-2">
+          <CardHeader>
+            <CardTitle className="flex items-center justify-between">
+              Recent Issues
+              <Button variant="ghost" size="sm" asChild>
+                <Link to="/board">View All</Link>
+              </Button>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {recentIssues.map((issue) => {
+              const TypeIcon = issueTypeIcons[issue.type as keyof typeof issueTypeIcons];
+              return (
+                <div
+                  key={issue.id}
+                  className="flex items-center justify-between p-3 rounded-lg border hover:bg-accent/50 transition-colors cursor-pointer"
+                >
+                  <div className="flex items-center space-x-3">
+                    <TypeIcon className="h-4 w-4 text-muted-foreground" />
+                    <div>
+                      <p className="text-sm font-medium text-foreground">{issue.title}</p>
+                      <p className="text-xs text-muted-foreground">{issue.id} • {issue.assignee}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Badge variant="outline" className="text-xs">
+                      {issue.priority}
+                    </Badge>
+                    <Badge variant="secondary" className="text-xs">
+                      {issue.status}
+                    </Badge>
+                  </div>
+                </div>
+              );
+            })}
+          </CardContent>
+        </Card>
+
+        {/* Quick Actions */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Quick Actions</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <Button className="w-full justify-start" variant="outline">
+              <Zap className="h-4 w-4 mr-2" />
+              Create Story
+            </Button>
+            <Button className="w-full justify-start" variant="outline">
+              <Bug className="h-4 w-4 mr-2" />
+              Report Bug
+            </Button>
+            <Button className="w-full justify-start" variant="outline">
+              <CheckSquare className="h-4 w-4 mr-2" />
+              Add Task
+            </Button>
+            <Button className="w-full justify-start" variant="outline">
+              <Crown className="h-4 w-4 mr-2" />
+              Create Epic
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Activity Chart Placeholder */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center">
+            <TrendingUp className="h-5 w-5 mr-2" />
+            Team Velocity
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="h-32 flex items-center justify-center bg-muted/50 rounded-lg">
+            <p className="text-muted-foreground">Chart visualization coming soon</p>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
