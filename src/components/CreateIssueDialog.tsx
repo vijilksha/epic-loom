@@ -10,9 +10,10 @@ import { Issue, IssueType, Priority } from "@/types";
 
 interface CreateIssueDialogProps {
   onCreateIssue: (issue: Omit<Issue, 'id' | 'createdAt' | 'updatedAt'>) => void;
+  children?: React.ReactNode;
 }
 
-export function CreateIssueDialog({ onCreateIssue }: CreateIssueDialogProps) {
+export function CreateIssueDialog({ onCreateIssue, children }: CreateIssueDialogProps) {
   const [open, setOpen] = useState(false);
   const [formData, setFormData] = useState({
     title: "",
@@ -51,9 +52,11 @@ export function CreateIssueDialog({ onCreateIssue }: CreateIssueDialogProps) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="ghost" size="icon" className="h-6 w-6">
-          <Plus className="h-4 w-4" />
-        </Button>
+        {children || (
+          <Button variant="ghost" size="icon" className="h-6 w-6">
+            <Plus className="h-4 w-4" />
+          </Button>
+        )}
       </DialogTrigger>
       
       <DialogContent className="sm:max-w-[500px]">

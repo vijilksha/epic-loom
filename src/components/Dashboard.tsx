@@ -10,9 +10,13 @@ import {
   Zap,
   CheckSquare,
   Crown,
-  ArrowRight
+  ArrowRight,
+  Plus
 } from "lucide-react";
 import { Link } from "react-router-dom";
+import { CreateIssueDialog } from "@/components/CreateIssueDialog";
+import { useCreateIssue } from "@/hooks/useIssues";
+import { Issue, IssueType } from "@/types";
 
 const stats = [
   {
@@ -80,6 +84,22 @@ const issueTypeIcons = {
 };
 
 export function Dashboard() {
+  const createIssueMutation = useCreateIssue();
+
+  const handleCreateIssue = (issue: Omit<Issue, 'id' | 'createdAt' | 'updatedAt'>) => {
+    createIssueMutation.mutate(issue);
+  };
+
+  const handleQuickCreate = (type: IssueType) => {
+    const issueData = {
+      title: `New ${type.charAt(0).toUpperCase() + type.slice(1)}`,
+      type,
+      priority: 'medium' as const,
+      status: 'todo' as const,
+    };
+    createIssueMutation.mutate(issueData);
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -88,7 +108,13 @@ export function Dashboard() {
           <p className="text-muted-foreground">Track your project progress and team productivity</p>
         </div>
         <div className="flex items-center space-x-3">
-          <Button asChild>
+          <CreateIssueDialog onCreateIssue={handleCreateIssue}>
+            <Button>
+              <Plus className="h-4 w-4 mr-2" />
+              Create Issue
+            </Button>
+          </CreateIssueDialog>
+          <Button asChild variant="outline">
             <Link to="/board">
               View Board
               <ArrowRight className="h-4 w-4 ml-2" />
@@ -163,19 +189,39 @@ export function Dashboard() {
             <CardTitle>Quick Actions</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
-            <Button className="w-full justify-start" variant="outline">
+            <Button 
+              className="w-full justify-start" 
+              variant="outline"
+              onClick={() => handleQuickCreate('story')}
+              disabled={createIssueMutation.isPending}
+            >
               <Zap className="h-4 w-4 mr-2" />
               Create Story
             </Button>
-            <Button className="w-full justify-start" variant="outline">
+            <Button 
+              className="w-full justify-start" 
+              variant="outline"
+              onClick={() => handleQuickCreate('bug')}
+              disabled={createIssueMutation.isPending}
+            >
               <Bug className="h-4 w-4 mr-2" />
               Report Bug
             </Button>
-            <Button className="w-full justify-start" variant="outline">
+            <Button 
+              className="w-full justify-start" 
+              variant="outline"
+              onClick={() => handleQuickCreate('task')}
+              disabled={createIssueMutation.isPending}
+            >
               <CheckSquare className="h-4 w-4 mr-2" />
               Add Task
             </Button>
-            <Button className="w-full justify-start" variant="outline">
+            <Button 
+              className="w-full justify-start" 
+              variant="outline"
+              onClick={() => handleQuickCreate('epic')}
+              disabled={createIssueMutation.isPending}
+            >
               <Crown className="h-4 w-4 mr-2" />
               Create Epic
             </Button>
