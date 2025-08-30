@@ -1,6 +1,9 @@
 import { useMemo, useState } from "react";
 import { DragDropContext, Droppable, Draggable, DropResult } from "@hello-pangea/dnd";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Search, X } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { IssueCard } from "./IssueCard";
 import { CreateIssueDialog } from "./CreateIssueDialog";
 import { IssueDetailDialog } from "./IssueDetailDialog";
@@ -27,6 +30,7 @@ export function KanbanBoard() {
   const queryClient = useQueryClient();
   const [selectedIssue, setSelectedIssue] = useState<Issue | null>(null);
   const [isDetailDialogOpen, setIsDetailDialogOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
 
   // Fetch issues from Supabase
   const { data: issues = [], isLoading } = useQuery({
@@ -69,6 +73,8 @@ export function KanbanBoard() {
           priority: issueData.priority,
           status: issueData.status,
           assignee: issueData.assignee,
+          reported_by: issueData.reportedBy,
+          raised_date: issueData.raisedDate ? issueData.raisedDate.toISOString() : new Date().toISOString(),
         }])
         .select()
         .single();
@@ -117,13 +123,30 @@ export function KanbanBoard() {
     },
   });
 
+  // Filter issues based on search query
+  const filteredIssues = useMemo(() => {
+    if (!searchQuery.trim()) return issues;
+    
+    const query = searchQuery.toLowerCase().trim();
+    return issues.filter(issue => 
+      issue.title.toLowerCase().includes(query) ||
+      issue.description?.toLowerCase().includes(query) ||
+      issue.assignee?.toLowerCase().includes(query) ||
+      issue.reportedBy?.toLowerCase().includes(query) ||
+      issue.type.toLowerCase().includes(query) ||
+      issue.priority.toLowerCase().includes(query) ||
+      issue.status.toLowerCase().includes(query) ||
+      issue.id.toLowerCase().includes(query)
+    );
+  }, [issues, searchQuery]);
+
   // Group issues by status into columns
   const columns = useMemo(() => {
     return columnDefinitions.map(columnDef => ({
       ...columnDef,
-      issues: issues.filter(issue => issue.status === columnDef.status),
+      issues: filteredIssues.filter(issue => issue.status === columnDef.status),
     }));
-  }, [issues]);
+  }, [filteredIssues]);
 
   const handleCreateIssue = (issueData: Omit<Issue, 'id' | 'createdAt' | 'updatedAt'>) => {
     createIssueMutation.mutate(issueData);
@@ -132,6 +155,10 @@ export function KanbanBoard() {
   const handleIssueClick = (issue: Issue) => {
     setSelectedIssue(issue);
     setIsDetailDialogOpen(true);
+  };
+
+  const clearSearch = () => {
+    setSearchQuery("");
   };
 
   const handleDragEnd = (result: DropResult) => {
@@ -165,6 +192,36 @@ export function KanbanBoard() {
 
   return (
     <div className="h-full">
+      {/* Search Header */}
+      <div className="mb-6">
+        <div className="flex items-center gap-4 mb-4">
+          <div className="relative flex-1 max-w-md">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Search issues by title, description, assignee, type..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10 pr-10"
+            />
+            {searchQuery && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={clearSearch}
+                className="absolute right-1 top-1/2 transform -translate-y-1/2 h-6 w-6 p-0 hover:bg-transparent"
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            )}
+          </div>
+          {searchQuery && (
+            <div className="text-sm text-muted-foreground">
+              Found {filteredIssues.length} issue{filteredIssues.length !== 1 ? 's' : ''}
+            </div>
+          )}
+        </div>
+      </div>
+
       <DragDropContext onDragEnd={handleDragEnd}>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 h-full">
           {columns.map((column) => (
