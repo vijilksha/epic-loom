@@ -7,7 +7,7 @@ export function Header() {
   return (
     <header className="h-16 border-b border-border bg-card px-6 flex items-center justify-between">
       <div className="flex items-center space-x-4">
-        <h2 className="text-lg font-semibold text-foreground">Project Dashboard</h2>
+        <h2 className="text-lg font-semibold text-foreground">Tekstack Dashboard</h2>
       </div>
       
       <div className="flex items-center space-x-4">
