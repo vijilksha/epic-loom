@@ -14,6 +14,33 @@ export type Database = {
   }
   public: {
     Tables: {
+      comments: {
+        Row: {
+          comment_text: string
+          created_at: string
+          created_by: string | null
+          id: string
+          issue_id: string
+          updated_at: string
+        }
+        Insert: {
+          comment_text: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          issue_id: string
+          updated_at?: string
+        }
+        Update: {
+          comment_text?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          issue_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       issues: {
         Row: {
           assignee: string | null
@@ -23,6 +50,7 @@ export type Database = {
           priority: string
           reported_by: string | null
           status: string
+          status_date: string | null
           title: string
           type: string
           updated_at: string
@@ -35,6 +63,7 @@ export type Database = {
           priority: string
           reported_by?: string | null
           status: string
+          status_date?: string | null
           title: string
           type: string
           updated_at?: string
@@ -47,6 +76,7 @@ export type Database = {
           priority?: string
           reported_by?: string | null
           status?: string
+          status_date?: string | null
           title?: string
           type?: string
           updated_at?: string
