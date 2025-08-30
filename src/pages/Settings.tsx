@@ -24,7 +24,7 @@ export default function Settings() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold text-foreground">Settings</h1>
-            <p className="text-muted-foreground">Manage your Tekstack configuration and preferences</p>
+            <p className="text-muted-foreground">Manage your Tekstac configuration and preferences</p>
           </div>
         </div>
 
@@ -60,19 +60,19 @@ export default function Settings() {
 
           {/* Settings Content */}
           <div className="lg:col-span-2 space-y-6">
-            {/* Tekstack Settings */}
+            {/* Tekstac Settings */}
             <Card>
               <CardHeader>
-                <CardTitle>Tekstack Settings</CardTitle>
+                <CardTitle>Tekstac Settings</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="project-name">Tekstack Name</Label>
-                    <Input id="project-name" defaultValue="Tekstack" />
+                    <Label htmlFor="project-name">Tekstac Name</Label>
+                    <Input id="project-name" defaultValue="Tekstac" />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="project-key">Tekstack Key</Label>
+                    <Label htmlFor="project-key">Tekstac Key</Label>
                     <Input id="project-key" defaultValue="TEKS" />
                   </div>
                 </div>
@@ -80,7 +80,7 @@ export default function Settings() {
                   <Label htmlFor="project-description">Description</Label>
                   <Input 
                     id="project-description" 
-                    defaultValue="A modern Tekstack management tool for agile teams" 
+                    defaultValue="A modern Tekstac management tool for agile teams" 
                   />
                 </div>
                 <div className="space-y-2">
@@ -91,7 +91,7 @@ export default function Settings() {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="unassigned">Unassigned</SelectItem>
-                      <SelectItem value="tekstack-lead">Tekstack Lead</SelectItem>
+                      <SelectItem value="tekstac-lead">Tekstac Lead</SelectItem>
                       <SelectItem value="reporter">Reporter</SelectItem>
                     </SelectContent>
                   </Select>
@@ -189,9 +189,9 @@ export default function Settings() {
               <CardContent className="space-y-4">
                 <div className="flex items-center justify-between p-4 border border-destructive/20 rounded-lg">
                   <div>
-                    <p className="font-medium">Delete Tekstack</p>
+                    <p className="font-medium">Delete Tekstac</p>
                     <p className="text-sm text-muted-foreground">
-                      Permanently delete this Tekstack and all its data
+                      Permanently delete this Tekstac and all its data
                     </p>
                   </div>
                   <Button variant="destructive" size="sm">

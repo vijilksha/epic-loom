@@ -70,7 +70,7 @@ export function CreateIssueDialog({ onCreateIssue, children }: CreateIssueDialog
         <DialogHeader>
           <DialogTitle>Create New Issue</DialogTitle>
           <DialogDescription>
-            Add a new issue to your Tekstack board.
+            Add a new issue to your Tekstac board.
           </DialogDescription>
         </DialogHeader>
 

@@ -33,7 +33,7 @@ export function Sidebar() {
           <div className="w-8 h-8 bg-gradient-primary rounded-lg flex items-center justify-center">
             <KanbanSquare className="h-5 w-5 text-white" />
           </div>
-          <span className="text-lg font-bold text-foreground">Tekstack</span>
+          <span className="text-lg font-bold text-foreground">Tekstac</span>
         </div>
       </div>
       
