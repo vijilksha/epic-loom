@@ -15,66 +15,9 @@ import {
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { CreateIssueDialog } from "@/components/CreateIssueDialog";
-import { useCreateIssue } from "@/hooks/useIssues";
+import { useCreateIssue, useIssues } from "@/hooks/useIssues";
 import { Issue, IssueType } from "@/types";
-
-const stats = [
-  {
-    title: "Total Issues",
-    value: "23",
-    change: "+12%",
-    icon: CheckSquare,
-    color: "primary"
-  },
-  {
-    title: "In Progress", 
-    value: "8",
-    change: "+2",
-    icon: Clock,
-    color: "status-progress"
-  },
-  {
-    title: "Completed",
-    value: "15", 
-    change: "+5",
-    icon: CheckCircle,
-    color: "status-done"
-  },
-  {
-    title: "Team Members",
-    value: "6",
-    change: "+1",
-    icon: Users,
-    color: "muted"
-  },
-];
-
-const recentIssues = [
-  {
-    id: "PROJ-001",
-    title: "Implement user authentication",
-    type: "story",
-    priority: "high",
-    assignee: "John Doe",
-    status: "In Progress"
-  },
-  {
-    id: "PROJ-002",
-    title: "Fix header alignment bug", 
-    type: "bug",
-    priority: "medium",
-    assignee: "Jane Smith",
-    status: "To Do"
-  },
-  {
-    id: "PROJ-003",
-    title: "Design new dashboard layout",
-    type: "task", 
-    priority: "medium",
-    assignee: "Mike Johnson",
-    status: "In Progress"
-  },
-];
+import { useMemo } from "react";
 
 const issueTypeIcons = {
   story: Zap,
@@ -84,7 +27,52 @@ const issueTypeIcons = {
 };
 
 export function Dashboard() {
+  const { data: issues = [], isLoading } = useIssues();
   const createIssueMutation = useCreateIssue();
+
+  // Calculate real stats from issues data
+  const stats = useMemo(() => {
+    const totalIssues = issues.length;
+    const inProgress = issues.filter(issue => issue.status === 'progress').length;
+    const completed = issues.filter(issue => issue.status === 'done').length;
+    const uniqueAssignees = new Set(issues.filter(issue => issue.assignee).map(issue => issue.assignee)).size;
+
+    return [
+      {
+        title: "Total Issues",
+        value: totalIssues.toString(),
+        change: `${totalIssues} total`,
+        icon: CheckSquare,
+        color: "primary"
+      },
+      {
+        title: "In Progress", 
+        value: inProgress.toString(),
+        change: `${Math.round((inProgress / totalIssues) * 100) || 0}%`,
+        icon: Clock,
+        color: "status-progress"
+      },
+      {
+        title: "Completed",
+        value: completed.toString(), 
+        change: `${Math.round((completed / totalIssues) * 100) || 0}%`,
+        icon: CheckCircle,
+        color: "status-done"
+      },
+      {
+        title: "Team Members",
+        value: uniqueAssignees.toString(),
+        change: `${uniqueAssignees} active`,
+        icon: Users,
+        color: "muted"
+      },
+    ];
+  }, [issues]);
+
+  // Get recent issues (last 3)
+  const recentIssues = useMemo(() => {
+    return issues.slice(0, 3);
+  }, [issues]);
 
   const handleCreateIssue = (issue: Omit<Issue, 'id' | 'createdAt' | 'updatedAt'>) => {
     createIssueMutation.mutate(issue);
@@ -99,6 +87,14 @@ export function Dashboard() {
     };
     createIssueMutation.mutate(issueData);
   };
+
+  if (isLoading) {
+    return (
+      <div className="h-full flex items-center justify-center">
+        <div className="text-muted-foreground">Loading dashboard...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -155,31 +151,40 @@ export function Dashboard() {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            {recentIssues.map((issue) => {
-              const TypeIcon = issueTypeIcons[issue.type as keyof typeof issueTypeIcons];
-              return (
-                <div
-                  key={issue.id}
-                  className="flex items-center justify-between p-3 rounded-lg border hover:bg-accent/50 transition-colors cursor-pointer"
-                >
-                  <div className="flex items-center space-x-3">
-                    <TypeIcon className="h-4 w-4 text-muted-foreground" />
-                    <div>
-                      <p className="text-sm font-medium text-foreground">{issue.title}</p>
-                      <p className="text-xs text-muted-foreground">{issue.id} • {issue.assignee}</p>
+            {recentIssues.length > 0 ? (
+              recentIssues.map((issue) => {
+                const TypeIcon = issueTypeIcons[issue.type as keyof typeof issueTypeIcons];
+                return (
+                  <div
+                    key={issue.id}
+                    className="flex items-center justify-between p-3 rounded-lg border hover:bg-accent/50 transition-colors cursor-pointer"
+                  >
+                    <div className="flex items-center space-x-3">
+                      <TypeIcon className="h-4 w-4 text-muted-foreground" />
+                      <div>
+                        <p className="text-sm font-medium text-foreground">{issue.title}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {issue.assignee || 'Unassigned'} • {new Date(issue.createdAt).toLocaleDateString()}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <Badge variant="outline" className="text-xs">
+                        {issue.priority}
+                      </Badge>
+                      <Badge variant="secondary" className="text-xs">
+                        {issue.status === 'todo' ? 'To Do' : issue.status === 'progress' ? 'In Progress' : 'Done'}
+                      </Badge>
                     </div>
                   </div>
-                  <div className="flex items-center space-x-2">
-                    <Badge variant="outline" className="text-xs">
-                      {issue.priority}
-                    </Badge>
-                    <Badge variant="secondary" className="text-xs">
-                      {issue.status}
-                    </Badge>
-                  </div>
-                </div>
-              );
-            })}
+                );
+              })
+            ) : (
+              <div className="text-center py-8 text-muted-foreground">
+                <p>No issues yet</p>
+                <p className="text-xs">Create your first issue to get started</p>
+              </div>
+            )}
           </CardContent>
         </Card>
 

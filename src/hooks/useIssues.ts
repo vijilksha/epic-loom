@@ -87,3 +87,34 @@ export function useUpdateIssue() {
     },
   });
 }
+
+export function useDeleteIssue() {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await (supabase as any)
+        .from("issues")
+        .delete()
+        .eq("id", id);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["issues"] });
+      toast({
+        title: "Issue deleted",
+        description: "The issue has been deleted successfully.",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: "Failed to delete issue. Please try again.",
+        variant: "destructive",
+      });
+      console.error("Error deleting issue:", error);
+    },
+  });
+}
