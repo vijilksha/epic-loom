@@ -33,6 +33,7 @@ export function useCreateIssue() {
           priority: issue.priority,
           status: issue.status,
           assignee: issue.assignee,
+          reported_by: issue.reportedBy,
         }])
         .select()
         .single();
