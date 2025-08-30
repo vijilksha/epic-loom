@@ -20,6 +20,8 @@ export interface Comment {
   id: string;
   issueId: string;
   commentText: string;
+  actionTaken?: string;
+  solutionSummary?: string;
   createdBy?: string;
   createdAt: Date;
   updatedAt: Date;

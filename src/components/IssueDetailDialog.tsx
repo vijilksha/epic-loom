@@ -14,6 +14,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { 
   Bug, 
   BookOpen, 
@@ -25,7 +27,9 @@ import {
   ArrowDown,
   User,
   Calendar,
-  MessageSquare
+  MessageSquare,
+  Settings,
+  FileText
 } from "lucide-react";
 import { format } from "date-fns";
 
@@ -64,6 +68,8 @@ interface IssueDetailDialogProps {
 
 export function IssueDetailDialog({ issue, open, onOpenChange }: IssueDetailDialogProps) {
   const [commentText, setCommentText] = useState("");
+  const [actionTaken, setActionTaken] = useState("");
+  const [solutionSummary, setSolutionSummary] = useState("");
   const { data: comments, isLoading: commentsLoading } = useComments(issue?.id || "");
   const createCommentMutation = useCreateComment();
 
@@ -78,10 +84,14 @@ export function IssueDetailDialog({ issue, open, onOpenChange }: IssueDetailDial
     await createCommentMutation.mutateAsync({
       issueId: issue.id,
       commentText: commentText.trim(),
+      actionTaken: actionTaken.trim() || undefined,
+      solutionSummary: solutionSummary.trim() || undefined,
       createdBy: "Current User", // In a real app, this would be the authenticated user
     });
     
     setCommentText("");
+    setActionTaken("");
+    setSolutionSummary("");
   };
 
   return (
@@ -148,23 +158,52 @@ export function IssueDetailDialog({ issue, open, onOpenChange }: IssueDetailDial
 
             <Separator />
 
-            {/* Comments Section */}
+            {/* Issue Comments Section */}
             <div className="space-y-4">
               <div className="flex items-center gap-2">
                 <MessageSquare className="h-5 w-5" />
                 <h4 className="font-semibold">
-                  Comments ({comments?.length || 0})
+                  Issue Comments ({comments?.length || 0})
                 </h4>
               </div>
 
-              {/* Add Comment */}
-              <div className="space-y-3">
-                <Textarea
-                  placeholder="Add a comment..."
-                  value={commentText}
-                  onChange={(e) => setCommentText(e.target.value)}
-                  className="min-h-[80px]"
-                />
+              {/* Add Issue Comment */}
+              <div className="space-y-4">
+                <div className="space-y-3">
+                  <div>
+                    <Label htmlFor="comment-text">Issue Comment</Label>
+                    <Textarea
+                      id="comment-text"
+                      placeholder="Add an issue comment..."
+                      value={commentText}
+                      onChange={(e) => setCommentText(e.target.value)}
+                      className="min-h-[80px] mt-1"
+                    />
+                  </div>
+                  
+                  <div>
+                    <Label htmlFor="action-taken">Action Taken</Label>
+                    <Textarea
+                      id="action-taken"
+                      placeholder="Describe what action was taken..."
+                      value={actionTaken}
+                      onChange={(e) => setActionTaken(e.target.value)}
+                      className="min-h-[60px] mt-1"
+                    />
+                  </div>
+                  
+                  <div>
+                    <Label htmlFor="solution-summary">Solution Summary</Label>
+                    <Textarea
+                      id="solution-summary"
+                      placeholder="Summarize the solution..."
+                      value={solutionSummary}
+                      onChange={(e) => setSolutionSummary(e.target.value)}
+                      className="min-h-[60px] mt-1"
+                    />
+                  </div>
+                </div>
+                
                 <div className="flex justify-end">
                   <Button 
                     onClick={handleAddComment}
@@ -190,7 +229,7 @@ export function IssueDetailDialog({ issue, open, onOpenChange }: IssueDetailDial
                   comments?.map((comment) => (
                     <Card key={comment.id} className="border-l-4 border-l-primary/20">
                       <CardContent className="pt-3">
-                        <div className="flex items-start justify-between mb-2">
+                        <div className="flex items-start justify-between mb-3">
                           <div className="flex items-center gap-2">
                             <User className="h-4 w-4 text-muted-foreground" />
                             <span className="font-medium text-sm">
@@ -201,9 +240,42 @@ export function IssueDetailDialog({ issue, open, onOpenChange }: IssueDetailDial
                             {format(comment.createdAt, "MMM d, yyyy 'at' h:mm a")}
                           </span>
                         </div>
-                        <p className="text-sm leading-relaxed">
-                          {comment.commentText}
-                        </p>
+
+                        <div className="space-y-3">
+                          <div>
+                            <div className="flex items-center gap-2 mb-1">
+                              <MessageSquare className="h-3 w-3 text-muted-foreground" />
+                              <span className="text-xs font-medium text-muted-foreground uppercase">Issue Comment</span>
+                            </div>
+                            <p className="text-sm leading-relaxed">
+                              {comment.commentText}
+                            </p>
+                          </div>
+
+                          {comment.actionTaken && (
+                            <div>
+                              <div className="flex items-center gap-2 mb-1">
+                                <Settings className="h-3 w-3 text-muted-foreground" />
+                                <span className="text-xs font-medium text-muted-foreground uppercase">Action Taken</span>
+                              </div>
+                              <p className="text-sm leading-relaxed text-blue-700 dark:text-blue-300">
+                                {comment.actionTaken}
+                              </p>
+                            </div>
+                          )}
+
+                          {comment.solutionSummary && (
+                            <div>
+                              <div className="flex items-center gap-2 mb-1">
+                                <FileText className="h-3 w-3 text-muted-foreground" />
+                                <span className="text-xs font-medium text-muted-foreground uppercase">Solution Summary</span>
+                              </div>
+                              <p className="text-sm leading-relaxed text-green-700 dark:text-green-300">
+                                {comment.solutionSummary}
+                              </p>
+                            </div>
+                          )}
+                        </div>
                       </CardContent>
                     </Card>
                   ))

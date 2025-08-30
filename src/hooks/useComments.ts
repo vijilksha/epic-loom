@@ -18,6 +18,8 @@ export function useComments(issueId: string) {
         id: comment.id,
         issueId: comment.issue_id,
         commentText: comment.comment_text,
+        actionTaken: comment.action_taken,
+        solutionSummary: comment.solution_summary,
         createdBy: comment.created_by,
         createdAt: new Date(comment.created_at),
         updatedAt: new Date(comment.updated_at),
@@ -32,12 +34,20 @@ export function useCreateComment() {
   const { toast } = useToast();
 
   return useMutation({
-    mutationFn: async ({ issueId, commentText, createdBy }: { issueId: string; commentText: string; createdBy?: string }) => {
+    mutationFn: async ({ issueId, commentText, actionTaken, solutionSummary, createdBy }: { 
+      issueId: string; 
+      commentText: string; 
+      actionTaken?: string;
+      solutionSummary?: string;
+      createdBy?: string;
+    }) => {
       const { data, error } = await supabase
         .from("comments")
         .insert([{
           issue_id: issueId,
           comment_text: commentText,
+          action_taken: actionTaken,
+          solution_summary: solutionSummary,
           created_by: createdBy,
         }])
         .select()
