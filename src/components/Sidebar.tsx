@@ -7,10 +7,13 @@ import {
   Plus,
   Bug,
   CheckSquare,
-  Zap
+  Zap,
+  Crown
 } from "lucide-react";
 import { NavLink } from "react-router-dom";
 import { cn } from "@/lib/utils";
+import { useIssues } from "@/hooks/useIssues";
+import { useMemo } from "react";
 
 const navigation = [
   { name: "Dashboard", href: "/", icon: LayoutDashboard },
@@ -19,13 +22,22 @@ const navigation = [
   { name: "Settings", href: "/settings", icon: Settings },
 ];
 
-const issueTypes = [
-  { name: "Stories", icon: Zap, count: 12 },
-  { name: "Bugs", icon: Bug, count: 3 },
-  { name: "Tasks", icon: CheckSquare, count: 8 },
-];
-
 export function Sidebar() {
+  const { data: issues = [], isLoading } = useIssues();
+
+  const issueTypes = useMemo(() => {
+    const stories = issues.filter(issue => issue.type === 'story').length;
+    const bugs = issues.filter(issue => issue.type === 'bug').length;
+    const tasks = issues.filter(issue => issue.type === 'task').length;
+    const epics = issues.filter(issue => issue.type === 'epic').length;
+
+    return [
+      { name: "Stories", icon: Zap, count: stories, color: "text-blue-500" },
+      { name: "Bugs", icon: Bug, count: bugs, color: "text-red-500" },
+      { name: "Tasks", icon: CheckSquare, count: tasks, color: "text-green-500" },
+      { name: "Epics", icon: Crown, count: epics, color: "text-purple-500" },
+    ];
+  }, [issues]);
   return (
     <div className="w-64 bg-card border-r border-border">
       <div className="p-6">
@@ -68,22 +80,38 @@ export function Sidebar() {
         <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">
           Issue Types
         </h3>
-        <div className="space-y-1">
-          {issueTypes.map((type) => (
-            <div
-              key={type.name}
-              className="flex items-center justify-between px-3 py-2 rounded-lg hover:bg-accent transition-colors cursor-pointer"
-            >
-              <div className="flex items-center space-x-3">
-                <type.icon className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm text-foreground">{type.name}</span>
+        <div className="space-y-2">
+          {isLoading ? (
+            <div className="text-xs text-muted-foreground px-3 py-2">Loading...</div>
+          ) : (
+            issueTypes.map((type) => (
+              <div
+                key={type.name}
+                className="flex items-center justify-between px-3 py-2 rounded-lg hover:bg-accent transition-colors cursor-pointer group"
+              >
+                <div className="flex items-center space-x-3">
+                  <type.icon className={cn("h-4 w-4", type.color)} />
+                  <span className="text-sm text-foreground group-hover:text-accent-foreground">{type.name}</span>
+                </div>
+                <span className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded-full min-w-[24px] text-center">
+                  {type.count}
+                </span>
               </div>
-              <span className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded-full">
-                {type.count}
-              </span>
-            </div>
-          ))}
+            ))
+          )}
         </div>
+        
+        {!isLoading && (
+          <div className="mt-4 p-3 bg-muted/50 rounded-lg">
+            <div className="text-xs text-muted-foreground mb-2">Total Issues</div>
+            <div className="text-lg font-semibold text-foreground">
+              {issues.length}
+            </div>
+            <div className="text-xs text-muted-foreground">
+              {issues.filter(i => i.status === 'done').length} completed
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
