@@ -41,10 +41,7 @@ export function Sidebar() {
   return (
     <div className="w-64 bg-card border-r border-border">
       <div className="p-6">
-        <div className="flex items-center space-x-2">
-          <div className="w-8 h-8 bg-gradient-primary rounded-lg flex items-center justify-center">
-            <KanbanSquare className="h-5 w-5 text-white" />
-          </div>
+        <div>
           <span className="text-lg font-bold text-foreground">Issue Tracker</span>
         </div>
       </div>
