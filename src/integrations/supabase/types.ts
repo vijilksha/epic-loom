@@ -49,49 +49,106 @@ export type Database = {
       }
       issues: {
         Row: {
+          actual_result: string | null
           assignee: string | null
+          attachments: string[] | null
           closed_date: string | null
           created_at: string
           description: string | null
+          environment: string | null
+          epic_link: string | null
+          expected_result: string | null
           id: string
+          labels: string[] | null
           priority: string
+          project: string | null
           raised_date: string | null
           reported_by: string | null
+          sprint: string | null
           status: string
           status_date: string | null
+          steps_to_reproduce: string | null
           title: string
           type: string
           updated_at: string
         }
         Insert: {
+          actual_result?: string | null
           assignee?: string | null
+          attachments?: string[] | null
           closed_date?: string | null
           created_at?: string
           description?: string | null
+          environment?: string | null
+          epic_link?: string | null
+          expected_result?: string | null
           id?: string
+          labels?: string[] | null
           priority: string
+          project?: string | null
           raised_date?: string | null
           reported_by?: string | null
+          sprint?: string | null
           status: string
           status_date?: string | null
+          steps_to_reproduce?: string | null
           title: string
           type: string
           updated_at?: string
         }
         Update: {
+          actual_result?: string | null
           assignee?: string | null
+          attachments?: string[] | null
           closed_date?: string | null
           created_at?: string
           description?: string | null
+          environment?: string | null
+          epic_link?: string | null
+          expected_result?: string | null
           id?: string
+          labels?: string[] | null
           priority?: string
+          project?: string | null
           raised_date?: string | null
           reported_by?: string | null
+          sprint?: string | null
           status?: string
           status_date?: string | null
+          steps_to_reproduce?: string | null
           title?: string
           type?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      projects: {
+        Row: {
+          code: string
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          updated_at: string
+          user_role: Database["public"]["Enums"]["app_role"] | null
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          updated_at?: string
+          user_role?: Database["public"]["Enums"]["app_role"] | null
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          updated_at?: string
+          user_role?: Database["public"]["Enums"]["app_role"] | null
         }
         Relationships: []
       }

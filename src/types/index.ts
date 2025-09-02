@@ -16,6 +16,25 @@ export interface Issue {
   statusDate?: Date;
   raisedDate?: Date;
   closedDate?: Date;
+  project?: string;
+  environment?: string;
+  labels?: string[];
+  sprint?: string;
+  epicLink?: string;
+  stepsToReproduce?: string;
+  actualResult?: string;
+  expectedResult?: string;
+  attachments?: string[];
+}
+
+export interface Project {
+  id: string;
+  name: string;
+  code: string;
+  description?: string;
+  userRole?: 'trainer' | 'student';
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export interface Comment {

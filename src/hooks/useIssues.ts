@@ -13,7 +13,31 @@ export function useIssues() {
         .order("created_at", { ascending: false });
 
       if (error) throw error;
-      return data as Issue[];
+      
+      return data.map((issue: any) => ({
+        id: issue.id,
+        title: issue.title,
+        description: issue.description,
+        type: issue.type,
+        priority: issue.priority,
+        status: issue.status,
+        assignee: issue.assignee,
+        reportedBy: issue.reported_by,
+        createdAt: new Date(issue.created_at),
+        updatedAt: new Date(issue.updated_at),
+        statusDate: issue.status_date ? new Date(issue.status_date) : undefined,
+        raisedDate: issue.raised_date ? new Date(issue.raised_date) : undefined,
+        closedDate: issue.closed_date ? new Date(issue.closed_date) : undefined,
+        project: issue.project,
+        environment: issue.environment,
+        labels: issue.labels,
+        sprint: issue.sprint,
+        epicLink: issue.epic_link,
+        stepsToReproduce: issue.steps_to_reproduce,
+        actualResult: issue.actual_result,
+        expectedResult: issue.expected_result,
+        attachments: issue.attachments,
+      })) as Issue[];
     },
   });
 }
@@ -35,6 +59,15 @@ export function useCreateIssue() {
           assignee: issue.assignee,
           reported_by: issue.reportedBy,
           raised_date: issue.raisedDate ? issue.raisedDate.toISOString() : new Date().toISOString(),
+          project: issue.project,
+          environment: issue.environment,
+          labels: issue.labels,
+          sprint: issue.sprint,
+          epic_link: issue.epicLink,
+          steps_to_reproduce: issue.stepsToReproduce,
+          actual_result: issue.actualResult,
+          expected_result: issue.expectedResult,
+          attachments: issue.attachments,
         }])
         .select()
         .single();
@@ -45,14 +78,14 @@ export function useCreateIssue() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["issues"] });
       toast({
-        title: "Issue created",
-        description: "Your issue has been created successfully.",
+        title: "Defect created",
+        description: "Your defect has been reported successfully.",
       });
     },
     onError: (error) => {
       toast({
         title: "Error",
-        description: "Failed to create issue. Please try again.",
+        description: "Failed to create defect. Please try again.",
         variant: "destructive",
       });
       console.error("Error creating issue:", error);
