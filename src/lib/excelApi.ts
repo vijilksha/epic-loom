@@ -11,9 +11,23 @@ export const excelApi = {
 
   // Issues
   getIssues: async () => {
-    const response = await fetch(`${API_BASE_URL}/issues`);
-    if (!response.ok) throw new Error('Failed to fetch issues');
-    return response.json();
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout
+      
+      const response = await fetch(`${API_BASE_URL}/issues`, {
+        signal: controller.signal
+      });
+      clearTimeout(timeoutId);
+      
+      if (!response.ok) throw new Error(`Server error: ${response.status}`);
+      return response.json();
+    } catch (error) {
+      if (error.name === 'AbortError') {
+        throw new Error('Backend server not responding. Make sure Node.js server is running on port 3001');
+      }
+      throw error;
+    }
   },
 
   createIssue: async (issue: any) => {

@@ -34,6 +34,9 @@ export function useIssues() {
         attachments: issue.attachments ? (typeof issue.attachments === 'string' ? issue.attachments.split(',') : issue.attachments) : undefined,
       })) as Issue[];
     },
+    retry: 2,
+    retryDelay: 1000,
+    staleTime: 30000, // Consider data fresh for 30 seconds
   });
 }
 
