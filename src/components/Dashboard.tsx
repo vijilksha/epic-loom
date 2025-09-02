@@ -33,38 +33,41 @@ export function Dashboard() {
   // Calculate real stats from issues data
   const stats = useMemo(() => {
     const totalIssues = issues.length;
-    const inProgress = issues.filter(issue => issue.status === 'progress').length;
+    const stories = issues.filter(issue => issue.type === 'story').length;
+    const bugs = issues.filter(issue => issue.type === 'bug').length;
+    const tasks = issues.filter(issue => issue.type === 'task').length;
+    const epics = issues.filter(issue => issue.type === 'epic').length;
     const completed = issues.filter(issue => issue.status === 'done').length;
-    const uniqueAssignees = new Set(issues.filter(issue => issue.assignee).map(issue => issue.assignee)).size;
+    const inProgress = issues.filter(issue => issue.status === 'progress').length;
 
     return [
       {
-        title: "Total Issues",
-        value: totalIssues.toString(),
-        change: `${totalIssues} total`,
+        title: "Stories",
+        value: stories.toString(),
+        change: `${Math.round((stories / totalIssues) * 100) || 0}% of total`,
+        icon: Zap,
+        color: "primary"
+      },
+      {
+        title: "Bugs", 
+        value: bugs.toString(),
+        change: `${Math.round((bugs / totalIssues) * 100) || 0}% of total`,
+        icon: Bug,
+        color: "destructive"
+      },
+      {
+        title: "Tasks",
+        value: tasks.toString(), 
+        change: `${Math.round((tasks / totalIssues) * 100) || 0}% of total`,
         icon: CheckSquare,
         color: "primary"
       },
       {
-        title: "In Progress", 
-        value: inProgress.toString(),
-        change: `${Math.round((inProgress / totalIssues) * 100) || 0}%`,
-        icon: Clock,
-        color: "status-progress"
-      },
-      {
-        title: "Completed",
-        value: completed.toString(), 
-        change: `${Math.round((completed / totalIssues) * 100) || 0}%`,
-        icon: CheckCircle,
-        color: "status-done"
-      },
-      {
-        title: "Team Members",
-        value: uniqueAssignees.toString(),
-        change: `${uniqueAssignees} active`,
-        icon: Users,
-        color: "muted"
+        title: "Epics",
+        value: epics.toString(),
+        change: `${Math.round((epics / totalIssues) * 100) || 0}% of total`,
+        icon: Crown,
+        color: "secondary"
       },
     ];
   }, [issues]);
