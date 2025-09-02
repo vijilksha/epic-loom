@@ -117,7 +117,7 @@ export function CreateIssueDialog({ onCreateIssue, children }: CreateIssueDialog
         <DialogHeader>
           <DialogTitle>Create New Defect</DialogTitle>
           <DialogDescription>
-            Report a defect in your Tekstac project with detailed information.
+            Report a defect in your Issue tracker project with detailed information.
           </DialogDescription>
         </DialogHeader>
 

@@ -6,7 +6,7 @@ export default function Board() {
     <Layout>
       <div className="h-full">
         <div className="mb-6">
-          <h1 className="text-3xl font-bold text-foreground">Tekstac Board</h1>
+          <h1 className="text-3xl font-bold text-foreground">Issue Tracker Board</h1>
           <p className="text-muted-foreground">Manage and track your team's work with drag-and-drop simplicity</p>
         </div>
         <KanbanBoard />
