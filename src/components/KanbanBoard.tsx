@@ -9,9 +9,7 @@ import { CreateIssueDialog } from "./CreateIssueDialog";
 import { IssueDetailDialog } from "./IssueDetailDialog";
 import { Column, Issue, Status } from "@/types";
 import { cn } from "@/lib/utils";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
+import { useIssues, useCreateIssue, useUpdateIssue } from "@/hooks/useIssues";
 
 const columnDefinitions = [
   { id: "todo", title: "To Do", status: "todo" as Status },
@@ -26,102 +24,14 @@ const statusColors = {
 };
 
 export function KanbanBoard() {
-  const { toast } = useToast();
-  const queryClient = useQueryClient();
   const [selectedIssue, setSelectedIssue] = useState<Issue | null>(null);
   const [isDetailDialogOpen, setIsDetailDialogOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
-  // Fetch issues from Supabase
-  const { data: issues = [], isLoading } = useQuery({
-    queryKey: ['issues'],
-    queryFn: async () => {
-      const { data, error } = await (supabase as any)
-        .from('issues')
-        .select('*')
-        .order('created_at', { ascending: false });
-      
-      if (error) throw error;
-      
-      return (data || []).map((issue: any) => ({
-        id: issue.id,
-        title: issue.title,
-        description: issue.description,
-        type: issue.type,
-        priority: issue.priority,
-        status: issue.status,
-        assignee: issue.assignee,
-        reportedBy: issue.reported_by,
-        createdAt: new Date(issue.created_at),
-        updatedAt: new Date(issue.updated_at),
-        statusDate: issue.status_date ? new Date(issue.status_date) : undefined,
-        raisedDate: issue.raised_date ? new Date(issue.raised_date) : undefined,
-        closedDate: issue.closed_date ? new Date(issue.closed_date) : undefined,
-      })) as Issue[];
-    },
-  });
-
-  // Create issue mutation
-  const createIssueMutation = useMutation({
-    mutationFn: async (issueData: Omit<Issue, 'id' | 'createdAt' | 'updatedAt'>) => {
-      const { data, error } = await (supabase as any)
-        .from('issues')
-        .insert([{
-          title: issueData.title,
-          description: issueData.description,
-          type: issueData.type,
-          priority: issueData.priority,
-          status: issueData.status,
-          assignee: issueData.assignee,
-          reported_by: issueData.reportedBy,
-          raised_date: issueData.raisedDate ? issueData.raisedDate.toISOString() : new Date().toISOString(),
-        }])
-        .select()
-        .single();
-      
-      if (error) throw error;
-      return data;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['issues'] });
-      toast({
-        title: "Issue created",
-        description: "Your issue has been created successfully.",
-      });
-    },
-    onError: (error) => {
-      toast({
-        title: "Error",
-        description: "Failed to create issue. Please try again.",
-        variant: "destructive",
-      });
-    },
-  });
-
-  // Update issue status mutation
-  const updateIssueStatusMutation = useMutation({
-    mutationFn: async ({ issueId, status }: { issueId: string; status: Status }) => {
-      const { data, error } = await (supabase as any)
-        .from('issues')
-        .update({ status, updated_at: new Date().toISOString() })
-        .eq('id', issueId)
-        .select()
-        .single();
-      
-      if (error) throw error;
-      return data;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['issues'] });
-    },
-    onError: (error) => {
-      toast({
-        title: "Error",
-        description: "Failed to update issue status. Please try again.",
-        variant: "destructive",
-      });
-    },
-  });
+  // Use Excel-based hooks
+  const { data: issues = [], isLoading } = useIssues();
+  const createIssueMutation = useCreateIssue();
+  const updateIssueMutation = useUpdateIssue();
 
   // Filter issues based on search query
   const filteredIssues = useMemo(() => {
@@ -176,9 +86,9 @@ export function KanbanBoard() {
     const destColumn = columnDefinitions.find(col => col.id === destination.droppableId);
     if (!destColumn) return;
 
-    updateIssueStatusMutation.mutate({
-      issueId: draggableId,
-      status: destColumn.status,
+    updateIssueMutation.mutate({
+      id: draggableId,
+      updates: { status: destColumn.status },
     });
   };
 
