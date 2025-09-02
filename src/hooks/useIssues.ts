@@ -1,18 +1,13 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
 import { Issue } from "@/types";
 import { useToast } from "@/hooks/use-toast";
+import { excelApi } from "@/lib/excelApi";
 
 export function useIssues() {
   return useQuery({
     queryKey: ["issues"],
     queryFn: async () => {
-      const { data, error } = await (supabase as any)
-        .from("issues")
-        .select("*")
-        .order("created_at", { ascending: false });
-
-      if (error) throw error;
+      const data = await excelApi.getIssues();
       
       return data.map((issue: any) => ({
         id: issue.id,
@@ -30,13 +25,13 @@ export function useIssues() {
         closedDate: issue.closed_date ? new Date(issue.closed_date) : undefined,
         project: issue.project,
         environment: issue.environment,
-        labels: issue.labels,
+        labels: issue.labels ? (typeof issue.labels === 'string' ? issue.labels.split(',') : issue.labels) : undefined,
         sprint: issue.sprint,
         epicLink: issue.epic_link,
         stepsToReproduce: issue.steps_to_reproduce,
         actualResult: issue.actual_result,
         expectedResult: issue.expected_result,
-        attachments: issue.attachments,
+        attachments: issue.attachments ? (typeof issue.attachments === 'string' ? issue.attachments.split(',') : issue.attachments) : undefined,
       })) as Issue[];
     },
   });
@@ -48,32 +43,27 @@ export function useCreateIssue() {
 
   return useMutation({
     mutationFn: async (issue: Omit<Issue, 'id' | 'createdAt' | 'updatedAt'>) => {
-      const { data, error } = await (supabase as any)
-        .from("issues")
-        .insert([{
-          title: issue.title,
-          description: issue.description,
-          type: issue.type,
-          priority: issue.priority,
-          status: issue.status,
-          assignee: issue.assignee,
-          reported_by: issue.reportedBy,
-          raised_date: issue.raisedDate ? issue.raisedDate.toISOString() : new Date().toISOString(),
-          project: issue.project,
-          environment: issue.environment,
-          labels: issue.labels,
-          sprint: issue.sprint,
-          epic_link: issue.epicLink,
-          steps_to_reproduce: issue.stepsToReproduce,
-          actual_result: issue.actualResult,
-          expected_result: issue.expectedResult,
-          attachments: issue.attachments,
-        }])
-        .select()
-        .single();
+      const issueData = {
+        title: issue.title,
+        description: issue.description,
+        type: issue.type,
+        priority: issue.priority,
+        status: issue.status,
+        assignee: issue.assignee,
+        reported_by: issue.reportedBy,
+        raised_date: issue.raisedDate ? issue.raisedDate.toISOString() : new Date().toISOString(),
+        project: issue.project,
+        environment: issue.environment,
+        labels: issue.labels ? issue.labels.join(',') : null,
+        sprint: issue.sprint,
+        epic_link: issue.epicLink,
+        steps_to_reproduce: issue.stepsToReproduce,
+        actual_result: issue.actualResult,
+        expected_result: issue.expectedResult,
+        attachments: issue.attachments ? issue.attachments.join(',') : null,
+      };
 
-      if (error) throw error;
-      return data as Issue;
+      return await excelApi.createIssue(issueData);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["issues"] });
@@ -99,15 +89,43 @@ export function useUpdateIssue() {
 
   return useMutation({
     mutationFn: async ({ id, updates }: { id: string; updates: Partial<Issue> }) => {
-      const { data, error } = await (supabase as any)
-        .from("issues")
-        .update(updates)
-        .eq("id", id)
-        .select()
-        .single();
+      const updateData: any = { ...updates };
+      
+      // Convert arrays to strings for Excel storage
+      if (updateData.labels) {
+        updateData.labels = updateData.labels.join(',');
+      }
+      if (updateData.attachments) {
+        updateData.attachments = updateData.attachments.join(',');
+      }
+      
+      // Convert field names to match Excel format
+      if (updateData.reportedBy !== undefined) {
+        updateData.reported_by = updateData.reportedBy;
+        delete updateData.reportedBy;
+      }
+      if (updateData.epicLink !== undefined) {
+        updateData.epic_link = updateData.epicLink;
+        delete updateData.epicLink;
+      }
+      if (updateData.stepsToReproduce !== undefined) {
+        updateData.steps_to_reproduce = updateData.stepsToReproduce;
+        delete updateData.stepsToReproduce;
+      }
+      if (updateData.actualResult !== undefined) {
+        updateData.actual_result = updateData.actualResult;
+        delete updateData.actualResult;
+      }
+      if (updateData.expectedResult !== undefined) {
+        updateData.expected_result = updateData.expectedResult;
+        delete updateData.expectedResult;
+      }
+      if (updateData.raisedDate !== undefined) {
+        updateData.raised_date = updateData.raisedDate instanceof Date ? updateData.raisedDate.toISOString() : updateData.raisedDate;
+        delete updateData.raisedDate;
+      }
 
-      if (error) throw error;
-      return data as Issue;
+      return await excelApi.updateIssue(id, updateData);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["issues"] });
@@ -129,12 +147,7 @@ export function useDeleteIssue() {
 
   return useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await (supabase as any)
-        .from("issues")
-        .delete()
-        .eq("id", id);
-
-      if (error) throw error;
+      await excelApi.deleteIssue(id);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["issues"] });

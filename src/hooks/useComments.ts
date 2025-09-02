@@ -1,20 +1,17 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
 import { Comment } from "@/types";
 import { useToast } from "@/hooks/use-toast";
+import { excelApi } from "@/lib/excelApi";
 
 export function useComments(issueId: string) {
   return useQuery({
     queryKey: ["comments", issueId],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("comments")
-        .select("*")
-        .eq("issue_id", issueId)
-        .order("created_at", { ascending: true });
-
-      if (error) throw error;
-      return data.map(comment => ({
+      if (!issueId) return [];
+      
+      const data = await excelApi.getComments(issueId);
+      
+      return data.map((comment: any) => ({
         id: comment.id,
         issueId: comment.issue_id,
         commentText: comment.comment_text,
@@ -41,20 +38,15 @@ export function useCreateComment() {
       solutionSummary?: string;
       createdBy?: string;
     }) => {
-      const { data, error } = await supabase
-        .from("comments")
-        .insert([{
-          issue_id: issueId,
-          comment_text: commentText,
-          action_taken: actionTaken,
-          solution_summary: solutionSummary,
-          created_by: createdBy,
-        }])
-        .select()
-        .single();
+      const commentData = {
+        issue_id: issueId,
+        comment_text: commentText,
+        action_taken: actionTaken,
+        solution_summary: solutionSummary,
+        created_by: createdBy,
+      };
 
-      if (error) throw error;
-      return data;
+      return await excelApi.createComment(commentData);
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ["comments", variables.issueId] });

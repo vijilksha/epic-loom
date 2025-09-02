@@ -1,21 +1,14 @@
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
 import { Project } from "@/types";
+import { excelApi } from "@/lib/excelApi";
 
 export function useProjects() {
   return useQuery({
     queryKey: ["projects"],
     queryFn: async (): Promise<Project[]> => {
-      const { data, error } = await supabase
-        .from('projects')
-        .select('*')
-        .order('name');
+      const data = await excelApi.getProjects();
       
-      if (error) {
-        throw error;
-      }
-
-      return data.map(project => ({
+      return data.map((project: any) => ({
         id: project.id,
         name: project.name,
         code: project.code,
