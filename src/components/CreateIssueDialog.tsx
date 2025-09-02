@@ -283,13 +283,13 @@ export function CreateIssueDialog({ onCreateIssue, children }: CreateIssueDialog
             )}
           </div>
 
-          {/* Sprint and Epic Link */}
+          {/* Topic and Epic Link */}
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="sprint">Sprint</Label>
+              <Label htmlFor="sprint">Topic</Label>
               <Input
                 id="sprint"
-                placeholder="Sprint name (if applicable)"
+                placeholder="Topic name (if applicable)"
                 value={formData.sprint}
                 onChange={(e) => setFormData(prev => ({ ...prev, sprint: e.target.value }))}
               />
